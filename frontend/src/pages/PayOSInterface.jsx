@@ -10,6 +10,41 @@ import {
   RefreshCw,
 } from "lucide-react";
 
+// Utility functions for formatting and parsing numbers
+const formatNumber = (value) => {
+  if (!value) return "";
+  const number = parseNumber(value);
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const parseNumber = (value) => {
+  if (!value) return "";
+  return parseInt(value.toString().replace(/\./g, ""), 10);
+};
+
+// Custom input component for formatted number
+const FormattedNumberInput = ({ field, form, ...props }) => {
+  const handleChange = (e) => {
+    const rawValue = e.target.value.replace(/\./g, "");
+    if (!isNaN(rawValue) && rawValue !== "") {
+      form.setFieldValue(field.name, parseInt(rawValue, 10));
+      e.target.value = formatNumber(rawValue);
+    } else {
+      form.setFieldValue(field.name, "");
+      e.target.value = "";
+    }
+  };
+
+  return (
+    <input
+      {...field}
+      {...props}
+      value={formatNumber(field.value) || ""}
+      onChange={handleChange}
+    />
+  );
+};
+
 // Validation schema using Yup
 const paymentSchema = Yup.object({
   amount: Yup.number()
@@ -40,9 +75,9 @@ const PayOSInterface = () => {
   // Mô phỏng tạo QR code
   const generateQRCode = (values) => {
     const orderCode = `ORDER_${Date.now()}`;
-    const qrContent = `payos://payment?amount=${values.amount}&desc=${encodeURIComponent(
-      values.description
-    )}&order=${orderCode}`;
+    const qrContent = `payos://payment?amount=${
+      values.amount
+    }&desc=${encodeURIComponent(values.description)}&order=${orderCode}`;
 
     setPaymentData((prev) => ({ ...prev, orderCode, ...values }));
     setQrData(qrContent);
@@ -175,10 +210,10 @@ const PayOSInterface = () => {
                         Số tiền (VNĐ)
                       </label>
                       <Field
-                        type="number"
                         name="amount"
+                        component={FormattedNumberInput}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="100000"
+                        placeholder="100.000"
                       />
                       <ErrorMessage
                         name="amount"
@@ -281,7 +316,8 @@ const PayOSInterface = () => {
                   Thông tin thanh toán:
                 </p>
                 <p className="font-semibold">
-                  Số tiền: {parseInt(paymentData.amount).toLocaleString()} VNĐ
+                  Số tiền:{" "}
+                  {parseInt(paymentData.amount).toLocaleString("vi-VN")} VNĐ
                 </p>
                 <p className="text-sm text-gray-600">
                   Mã đơn: {paymentData.orderCode}
@@ -357,7 +393,8 @@ const PayOSInterface = () => {
                   Mã đơn: {paymentData.orderCode}
                 </p>
                 <p className="text-sm text-gray-600">
-                  Số tiền: {parseInt(paymentData.amount).toLocaleString()} VNĐ
+                  Số tiền:{" "}
+                  {parseInt(paymentData.amount).toLocaleString("vi-VN")} VNĐ
                 </p>
                 {paymentStatus === "success" && (
                   <p className="text-xs text-green-600 mt-2">
