@@ -1,5 +1,5 @@
 import React from "react";
-import PayOSInterface from "./pages/PayOSInterface";
+import PayOSInterface from "./components/PayOSInterface";
 
 const App = () => {
   return (
