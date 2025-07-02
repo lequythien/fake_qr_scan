@@ -1,0 +1,5 @@
+# Bỏ qua thư mục chứa các package
+node_modules/
+
+.env
+#biến môi trường
