@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import {
   QrCode,
   Smartphone,
@@ -7,6 +9,20 @@ import {
   Copy,
   RefreshCw,
 } from "lucide-react";
+
+// Validation schema using Yup
+const paymentSchema = Yup.object({
+  amount: Yup.number()
+    .required("Số tiền là bắt buộc")
+    .positive("Số tiền phải lớn hơn 0")
+    .integer("Số tiền phải là số nguyên"),
+  description: Yup.string()
+    .required("Mô tả là bắt buộc")
+    .min(3, "Mô tả phải có ít nhất 3 ký tự"),
+  callbackUrl: Yup.string()
+    .url("Callback URL phải là một URL hợp lệ")
+    .required("Callback URL là bắt buộc"),
+});
 
 const PayOSInterface = () => {
   const [step, setStep] = useState(1);
@@ -22,25 +38,20 @@ const PayOSInterface = () => {
   const [pendingPayment, setPendingPayment] = useState(null);
 
   // Mô phỏng tạo QR code
-  const generateQRCode = () => {
-    if (!paymentData.amount || !paymentData.description) {
-      alert("Vui lòng nhập đầy đủ thông tin!");
-      return;
-    }
-
+  const generateQRCode = (values) => {
     const orderCode = `ORDER_${Date.now()}`;
-    const qrContent = `payos://payment?amount=${
-      paymentData.amount
-    }&desc=${encodeURIComponent(paymentData.description)}&order=${orderCode}`;
+    const qrContent = `payos://payment?amount=${values.amount}&desc=${encodeURIComponent(
+      values.description
+    )}&order=${orderCode}`;
 
-    setPaymentData((prev) => ({ ...prev, orderCode }));
+    setPaymentData((prev) => ({ ...prev, orderCode, ...values }));
     setQrData(qrContent);
 
     // Tạo pending payment trên "server"
     const newPendingPayment = {
       id: orderCode,
-      amount: paymentData.amount,
-      description: paymentData.description,
+      amount: values.amount,
+      description: values.description,
       status: "pending",
       createdAt: new Date().toISOString(),
     };
@@ -148,93 +159,111 @@ const PayOSInterface = () => {
               <h2 className="text-xl font-semibold mb-4">
                 Bước 1: Tạo thanh toán
               </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Số tiền (VNĐ)
-                  </label>
-                  <input
-                    type="number"
-                    value={paymentData.amount}
-                    onChange={(e) =>
-                      setPaymentData((prev) => ({
-                        ...prev,
-                        amount: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="100000"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Mô tả
-                  </label>
-                  <input
-                    type="text"
-                    value={paymentData.description}
-                    onChange={(e) =>
-                      setPaymentData((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Thanh toán đơn hàng"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Key ID
-                    </label>
-                    <div className="flex">
-                      <input
-                        type="text"
-                        value={paymentData.keyId}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50"
-                        readOnly
+              <Formik
+                initialValues={{
+                  amount: "",
+                  description: "",
+                  callbackUrl: "https://yoursite.com/callback",
+                }}
+                validationSchema={paymentSchema}
+                onSubmit={(values) => generateQRCode(values)}
+              >
+                {({ isSubmitting }) => (
+                  <Form className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Số tiền (VNĐ)
+                      </label>
+                      <Field
+                        type="number"
+                        name="amount"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="100000"
                       />
-                      <button
-                        onClick={() => copyToClipboard(paymentData.keyId)}
-                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300"
-                      >
-                        <Copy size={16} />
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Callback URL
-                    </label>
-                    <div className="flex">
-                      <input
-                        type="text"
-                        value={paymentData.callbackUrl}
-                        onChange={(e) =>
-                          setPaymentData((prev) => ({
-                            ...prev,
-                            callbackUrl: e.target.value,
-                          }))
-                        }
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md"
+                      <ErrorMessage
+                        name="amount"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
                       />
-                      <button
-                        onClick={() => copyToClipboard(paymentData.callbackUrl)}
-                        className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300"
-                      >
-                        <Copy size={16} />
-                      </button>
                     </div>
-                  </div>
-                </div>
-                <button
-                  onClick={generateQRCode}
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 font-semibold"
-                >
-                  Tạo QR Code
-                </button>
-              </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Mô tả
+                      </label>
+                      <Field
+                        type="text"
+                        name="description"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Thanh toán đơn hàng"
+                      />
+                      <ErrorMessage
+                        name="description"
+                        component="div"
+                        className="text-red-500 text-sm mt-1"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Key ID
+                        </label>
+                        <div className="flex">
+                          <input
+                            type="text"
+                            value={paymentData.keyId}
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50"
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            onClick={() => copyToClipboard(paymentData.keyId)}
+                            className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300"
+                          >
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Callback URL
+                        </label>
+                        <div className="flex">
+                          <Field
+                            type="text"
+                            name="callbackUrl"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              copyToClipboard(
+                                document.querySelector(
+                                  'input[name="callbackUrl"]'
+                                ).value
+                              )
+                            }
+                            className="px-3 py-2 bg-gray-200 border border-l-0 border-gray-300 rounded-r-md hover:bg-gray-300"
+                          >
+                            <Copy size={16} />
+                          </button>
+                        </div>
+                        <ErrorMessage
+                          name="callbackUrl"
+                          component="div"
+                          className="text-red-500 text-sm mt-1"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 font-semibold disabled:bg-blue-300"
+                    >
+                      Tạo QR Code
+                    </button>
+                  </Form>
+                )}
+              </Formik>
             </div>
           )}
 
@@ -360,7 +389,7 @@ const PayOSInterface = () => {
             </div>
             <div className="bg-gray-50 p-4 rounded-lg">
               <h4 className="font-semibold text-gray-700 mb-2">
-                1. Link Callback
+                2. Link Callback
               </h4>
               <p className="text-sm text-gray-600 font-mono bg-white p-2 rounded border break-all">
                 {paymentData.callbackUrl}
