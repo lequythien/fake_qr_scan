@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 
-const PendingPaymentSchema = new mongoose.Schema({
+const PaymentSchema = new mongoose.Schema({
     transactionId: String,
     status: {
         type: String,
-        enum: ["pending", "completed", "failed"],
+        enum: ["pending", "success", "failed", "scanned"],
         default: "pending"
+    },
+    amount: {
+        type: Number,
+        required: true
     },
     clientKeyId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +20,6 @@ const PendingPaymentSchema = new mongoose.Schema({
         default: Date.now
     },
 
-})
+}, { timestamps: true });
 
-module.exports = mongoose.model("PendingPayment", PendingPaymentSchema);
+module.exports = mongoose.model("Payment", PaymentSchema);
