@@ -58,7 +58,7 @@ Hệ thống cần cho phép:
 
 **III. Sơ Dồ Use Case**
 
-![](Aspose.Words.104b329c-c2da-4501-8b66-7a672d7d8cc9.001.png)
+![Mô tả ảnh](https://github.com/TrungNguyen0304/fake_qr_scan/blob/main/images/be389ec2-8752-41b6-b1f5-ccd759e463e6.jpg)
 
 **1. Mô tả sơ đồ use:**
 
@@ -225,4 +225,4 @@ Hệ thống cần cho phép:
 **IV. Sơ đồ lớp** \
 
 
-![](Aspose.Words.104b329c-c2da-4501-8b66-7a672d7d8cc9.002.png)
+![Mô tả ảnh](https://github.com/TrungNguyen0304/fake_qr_scan/blob/main/images/56cfe30c-50f2-44e3-a09d-0157d9e90ff9.jpg)
