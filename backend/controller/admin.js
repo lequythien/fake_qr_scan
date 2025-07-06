@@ -1,6 +1,8 @@
 const Admin = require("../models/Admin");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { sendCallback } = require("../services/callbackService");
+const Payment = require("../models/Payment");
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -15,11 +17,11 @@ const login = (req, res) => {
             return res.status(400).json({ message: "Mật khẩu không đúng." });
           }
           const token = jwt.sign(
-            { id: admin._id, name: admin.name ,email: admin.email },
+            { id: admin._id, name: admin.name, email: admin.email },
             process.env.JWT_SECRET,
             { expiresIn: "1d" }
           );
-          res.json({ token }); // Chỉ trả về token
+          res.json({ token });
         });
     })
     .catch(err => {
@@ -27,4 +29,41 @@ const login = (req, res) => {
     });
 };
 
-module.exports = { login };
+
+const updatePayment = (req, res) => {
+  const { paymentId } = req.params;
+  const { status } = req.body;
+
+  const allowedStatuses = ["success", "failed"];
+  if (!allowedStatuses.includes(status)) {
+    return res.status(400).json({ message: "Trạng thái không hợp lệ." });
+  }
+
+  Payment.findById(paymentId)
+    .then(payment => {
+      if (!payment) {
+        return res.status(404).json({ message: "Không tìm thấy giao dịch." });
+      }
+
+      if (["success", "failed"].includes(payment.status)) {
+        return res.status(400).json({ message: "Giao dịch đã được xử lý trước đó." });
+      }
+
+      payment.status = status;
+
+      return payment.save()
+        .then(() => {
+          return sendCallback(payment.clientKeyId, payment._id.toString(), status);
+        })
+        .then(() => {
+          res.json({ message: "Cập nhật trạng thái thành công.", status: status });
+        });
+    })
+    .catch(err => {
+      console.error("Lỗi cập nhật trạng thái:", err);
+      res.status(500).json({ message: "Lỗi máy chủ khi cập nhật trạng thái." });
+    });
+};
+
+
+module.exports = { login, updatePayment };

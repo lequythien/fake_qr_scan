@@ -1,6 +1,6 @@
 const Client = require("../models/Client");
 const Payment = require("../models/Payment");
-const QRCode = require("qrcode"); 
+const QRCode = require("qrcode");
 
 const generateQRCode = (req, res) => {
     const { clientKeyId, amount } = req.body;
@@ -41,5 +41,48 @@ const generateQRCode = (req, res) => {
         });
 }
 
+const scanQRCode = (req, res) => {
+    const { paymentId } = req.params;
 
-module.exports = { generateQRCode };
+    Payment.findById(paymentId)
+        .then(payment => {
+            if (!payment) {
+                return res.status(404).send("Payment not found");
+            }
+
+            // Nếu giao dịch đã xử lý xong
+            if (payment.status === "success") {
+                return res.send("giao dịch thành công");
+            }
+            if (payment.status === "failed") {
+                return res.send("giao dịch thất bại");
+            }
+
+            // Kiểm tra hết hạn (15 phút)
+            const createdAt = new Date(payment.createdAt);
+            const now = new Date();
+            const diffMinutes = (now - createdAt) / 60000;
+            if (diffMinutes > 15) {
+                return res.status(410).send("Payment expired");
+            }
+
+            // Nếu còn pending → chuyển sang scanned
+            if (payment.status === "pending") {
+                payment.status = "scanned";
+                return payment.save().then(() => {
+                    res.send("Vui lòng chờ admin xử lý giao dịch...");
+                });
+            }
+
+            // Nếu không vào các case trên, vẫn trả trang chờ
+            res.send("Vui lòng chờ admin xử lý giao dịch...");
+        })
+        .catch(err => {
+            console.error("QR Scan Error:", err);
+            res.status(500).send("Lỗi hệ thống");
+        });
+};
+
+
+
+module.exports = { generateQRCode, scanQRCode };
