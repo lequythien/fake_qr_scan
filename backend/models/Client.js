@@ -1,7 +1,11 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const ClientSchema = new mongoose.Schema({
-    callbackUrl: String,
+const clientSchema = new mongoose.Schema({
+  callbackUrl: {
+    type: String,
+    required: true,
+    unique: true,
+  },
 });
 
-module.exports = mongoose.model("Client", ClientSchema);
+module.exports = mongoose.model("Client", clientSchema);

@@ -1,0 +1,10 @@
+/client
+pages/
+├── RegisterClientPage.jsx       // Đăng ký clientId và callbackUrl
+├── CreateQrPage.jsx             // Tạo mã QR từ amount + clientId
+├── QrScanPage.jsx               // Trang hiển thị khi người dùng quét QR
+├── CallbackSimulationPage.jsx   // (Tuỳ chọn) Mô phỏng nhận callback
+
+components/
+    ├── ClientNavbar.jsx         // Navbar cho client
+    └── QrDisplay.jsx            // Hiển thị mã QR đã tạo
