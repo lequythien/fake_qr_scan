@@ -23,9 +23,10 @@ connectDB();
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:5174"],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
+    credentials: true,
   })
 );
 
@@ -34,12 +35,11 @@ app.use("/api/clients", clientRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/qrcode", qrcodeRoute);
 
-
 const staticPath = path.join(__dirname);
 app.use(express.static(staticPath));
 
 // Start server
 const PORT = process.env.PORT || 8001;
 server.listen(PORT, () => {
-  console.log(` http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
