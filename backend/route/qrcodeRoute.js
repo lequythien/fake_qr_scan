@@ -3,7 +3,7 @@ const router = express.Router();
 
 const { generateQRCode,scanQRCode } = require('../controller/QRCodeService');
 
-router.post('/generate', generateQRCode);
+router.post('/generate/:clientKeyId', generateQRCode);
 
 router.get('/scan/:paymentId', scanQRCode);
 
