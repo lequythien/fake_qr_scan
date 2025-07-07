@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendCallback } = require("../services/callbackService");
 const Payment = require("../models/Payment");
+const { getIO } = require("../socket/socketInstance");// socket
+
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -33,6 +35,7 @@ const login = (req, res) => {
 const updatePayment = (req, res) => {
   const { paymentId } = req.params;
   const { status } = req.body;
+  const io = getIO();//socket
 
   const allowedStatuses = ["success", "failed"];
   if (!allowedStatuses.includes(status)) {
@@ -53,6 +56,10 @@ const updatePayment = (req, res) => {
 
       return payment.save()
         .then(() => {
+          io.to(payment._id.toString()).emit("payment-status-updated", {
+            status: status
+          });// socket
+
           return sendCallback(payment.clientKeyId, payment._id.toString(), status);
         })
         .then(() => {
@@ -66,4 +73,18 @@ const updatePayment = (req, res) => {
 };
 
 
-module.exports = { login, updatePayment };
+const showAll = (req, res) => {
+  Payment.find()
+    .populate("clientKeyId", "callbackUrl")
+    .sort({ createdAt: -1 })
+    .then(payments => {
+      res.json({ count: payments.length, payments });
+    })
+    .catch(err => {
+      console.error("Lỗi khi lấy danh sách giao dịch:", err);
+      res.status(500).json({ message: "Lỗi máy chủ khi lấy danh sách giao dịch." });
+    });
+};
+
+
+module.exports = { login, updatePayment, showAll };

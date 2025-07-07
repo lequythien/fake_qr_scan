@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { login, updatePayment } = require("../controller/admin");
+const { login, updatePayment,showAll } = require("../controller/admin");
 const authenticateJWT = require("../middleware/authenticateJWT");
 // Định nghĩa route đăng nhập
 router.post("/login", login);
@@ -12,5 +12,7 @@ router.get("/profile", authenticateJWT, (req, res) => {
 });
 
 router.put("/payment/:paymentId", authenticateJWT, updatePayment);
+
+router.get("/", authenticateJWT, showAll);
 
 module.exports = router;
