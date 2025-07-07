@@ -82,8 +82,6 @@ const generateQRCode = (req, res) => {
         });
 }
 
-
-
 const scanQRCode = (req, res) => {
     const { paymentId } = req.params;
 

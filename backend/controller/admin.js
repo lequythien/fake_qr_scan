@@ -66,4 +66,18 @@ const updatePayment = (req, res) => {
 };
 
 
-module.exports = { login, updatePayment };
+const showAll = (req, res) => {
+  Payment.find()
+    .populate("clientKeyId", "callbackUrl")
+    .sort({ createdAt: -1 })
+    .then(payments => {
+      res.json({ count: payments.length, payments });
+    })
+    .catch(err => {
+      console.error("Lỗi khi lấy danh sách giao dịch:", err);
+      res.status(500).json({ message: "Lỗi máy chủ khi lấy danh sách giao dịch." });
+    });
+};
+
+
+module.exports = { login, updatePayment, showAll };
