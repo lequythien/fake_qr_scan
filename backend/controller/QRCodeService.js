@@ -47,13 +47,13 @@ const generateQRCode = (req, res) => {
     const {clientKeyId} = req.params;
 
     if (typeof amount !== "number" || amount < 0) {
-        return res.status(400).json({ message: "Invalid amount" })
+        return res.status(400).json({ message: "Số tiền không hợp lệ" })
     }
 
     Client.findById(clientKeyId)
         .then(client => {
             if (!client) {
-                return res.status(404).json({ message: "Client ID not found" })
+                return res.status(404).json({ message: "Client ID không tồn tại" })
             }
             return Payment.create({
                 clientKeyId,

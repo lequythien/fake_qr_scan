@@ -5,7 +5,7 @@ function sendCallback(clientId, paymentId, status) {
   Client.findById(clientId)
     .then(client => {
       if (!client || !client.callbackUrl) {
-        console.error(`Callback URL not found for client: ${clientId}`);
+        console.error(`Không tìm thấy URL : ${clientId}`);
         return;
       }
 
