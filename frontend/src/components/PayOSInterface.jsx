@@ -170,19 +170,40 @@ const PayOSInterface = () => {
 
         {/* Progress Steps */}
         <div className="flex justify-center mb-8">
-          <div className="flex space-x-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                  step >= i
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-500"
-                }`}
-              >
-                {i}
-              </div>
-            ))}
+          <div>
+            <div className="flex items-center space-x-2">
+              {[1, 2, 3, 4].map((i, idx, arr) => (
+                <React.Fragment key={i}>
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
+                      step >= i
+                        ? "bg-blue-500 text-white"
+                        : "bg-gray-200 text-gray-500"
+                    }`}
+                  >
+                    {i}
+                  </div>
+                  {idx < arr.length - 1 && (
+                    <div className="mx-2 text-gray-400 font-bold text-xl select-none">
+                      ---
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+            {/* Step subtitles */}
+            <div className="flex items-center mt-2">
+              {["Tạo thanh toán", "Quét QR", "Đang xử lý", "Kết quả"].map(
+                (label, idx) => (
+                  <React.Fragment key={label}>
+                    <div className="w-8 text-xs text-center text-gray-700 font-medium">
+                      {label}
+                    </div>
+                    {idx < 3 && <div className="w-full" />}
+                  </React.Fragment>
+                )
+              )}
+            </div>
           </div>
         </div>
 

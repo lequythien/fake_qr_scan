@@ -1,0 +1,10 @@
+/admin
+/pages
+├── /LoginPage.jsx             // Trang đăng nhập admin
+├── /DashboardPage.jsx         // Trang tổng quan admin
+├── /TransactionsPage.jsx      // Danh sách các giao dịch
+├── /TransactionDetail.jsx     // Chi tiết và xử lý giao dịch
+
+/components
+    ├── /AdminNavbar.jsx       // Thanh điều hướng cho admin
+    └── /TransactionRow.jsx    // Item giao dịch trong danh sách
