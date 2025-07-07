@@ -41,5 +41,5 @@ app.use("/api/qrcode", qrcodeRoute);
 // Start server
 const PORT = process.env.PORT || 8001;
 server.listen(PORT, () => {
-  console.log(`✅ Server + Socket.IO đang chạy tại: http://localhost:${PORT}`);
+  console.log(` http://localhost:${PORT}`);
 });

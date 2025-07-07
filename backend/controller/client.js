@@ -5,7 +5,7 @@ const createClient = (req, res) => {
 
     if (!callbackUrl) {
         return res.status(400).json({
-            message: "Invalid callback URL"
+            message: "URL không hợp lệ"
         });
     }
 
@@ -13,7 +13,7 @@ const createClient = (req, res) => {
         .then(existingClient => {
             if (existingClient) {
                 return res.status(400).json({
-                    message: "Client with this callback URL already exists"
+                    message: "URL đã tồn tại"
                 });
             }
 
@@ -21,7 +21,7 @@ const createClient = (req, res) => {
             return newClient.save()
                 .then(savedClient => {
                     res.status(201).json({
-                        message: "Successfully created client",
+                        message: "Đã tạo thành công",
                         client: {
                             id: savedClient._id,
                             callbackUrl: savedClient.callbackUrl
@@ -37,6 +37,9 @@ const createClient = (req, res) => {
         });
 };
 
+
 module.exports = {
     createClient
 };
+
+
