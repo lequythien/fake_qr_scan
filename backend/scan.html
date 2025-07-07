@@ -30,7 +30,7 @@
 
   <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
   <script>
-    const socket = io("http://localhost:8001"); // 👈 Đảm bảo đúng port backend
+    const socket = io("http://192.168.1.17:8001"); // 👈 Đảm bảo đúng port backend
 
     // 🔍 Lấy paymentId từ query hoặc pathname
     const urlParams = new URLSearchParams(window.location.search);
