@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Added import for navigation
 import QrDisplay from "../components/QrDisplay";
-import { FiPlusCircle } from "react-icons/fi";
+import { GrLinkPrevious } from "react-icons/gr";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 
@@ -9,6 +10,7 @@ const CreateQr = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
+  const navigate = useNavigate(); // Initialize navigate hook
 
   const validationSchema = Yup.object({
     amount: Yup.string()
@@ -30,7 +32,7 @@ const CreateQr = () => {
       }
 
       const numericAmount = parseInt(values.amount.replaceAll(".", ""), 10);
-      
+
       const res = await fetch(
         `http://localhost:8001/api/qrcode/generate/${clientId}`,
         {
@@ -52,7 +54,6 @@ const CreateQr = () => {
         clientId,
         status: data.status,
       });
-      console.log("QR Code created successfully:", clientId);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -65,12 +66,22 @@ const CreateQr = () => {
     return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
+  // Handler for back button
+  const handleBack = () => {
+    navigate(-1); // Navigate to the previous page
+  };
+
   return (
     <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 animate-fade-in">
+      <div
+        className="flex items-center gap-2 mb-6 text-blue-600 cursor-pointer hover:underline text-lg font-medium"
+        onClick={handleBack}
+      >
+        <GrLinkPrevious />
+        Quay lại
+      </div>
+
       <header className="flex items-center gap-3 mb-6">
-        <div className="bg-blue-100 text-blue-600 p-3 rounded-full">
-          <FiPlusCircle className="text-xl" />
-        </div>
         <h1 className="text-xl md:text-2xl font-bold text-blue-700">
           Tạo mã QR thanh toán
         </h1>

@@ -16,7 +16,7 @@ const QrDisplay = ({ qrUrl }) => {
       <h3 className="text-lg font-semibold text-gray-800 mb-4">
         Mã QR thanh toán
       </h3>
-      <div className="inline-block border-4 border-blue-100 rounded-xl p-4 bg-white">
+      <div className="inline-block border-4 border-blue-100 rounded-xl bg-white">
         {qrUrl ? (
           <img
             src={qrUrl}

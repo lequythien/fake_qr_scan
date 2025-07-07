@@ -1,52 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { FiLoader } from "react-icons/fi";
+import React, { useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import io from 'socket.io-client';
 
 const QrScan = () => {
+  const navigate = useNavigate();
   const { paymentId } = useParams();
-  const [status, setStatus] = useState("scanned"); // scanned | success | failed
 
   useEffect(() => {
-    // Polling API every 3s until status !== pending
-    let interval = setInterval(async () => {
-      try {
-        const res = await fetch(`/api/payment-status/${paymentId}`);
-        const data = await res.json();
-        if (data.status && data.status !== "pending") {
-          setStatus(data.status);
-          clearInterval(interval);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [paymentId]);
+    // Initialize Socket.IO connection
+    const socket = io('http://192.168.1.24:8001');
+
+    console.log('📦 QR Scanned for paymentId:', paymentId);
+    socket.emit('join-payment-room', paymentId);
+
+    // Simulate QR scan completion and notify backend (replace with actual scan logic if needed)
+    socket.emit('qr-scanned', { paymentId });
+
+    // Redirect to pending-approval with paymentId
+    navigate(`/home/pending-approval/${paymentId}`);
+
+    // Cleanup socket connection
+    return () => {
+      socket.disconnect();
+    };
+  }, [paymentId, navigate]);
 
   return (
-    <section className="flex flex-col items-center justify-center text-center h-screen p-4 bg-gradient-to-b from-blue-50 to-blue-100 animate-fade-in">
-      {status === "scanned" && (
-        <>
-          <FiLoader className="animate-spin text-blue-600 text-5xl mb-4" />
-          <h2 className="text-xl font-semibold text-blue-700 mb-2">
-            Đang xử lý giao dịch...
-          </h2>
-          <p className="text-gray-600">Mã giao dịch: {paymentId}</p>
-        </>
-      )}
-      {status === "success" && (
-        <>
-          <h2 className="text-3xl font-bold text-green-600 mb-2">Thanh toán thành công!</h2>
-          <p className="text-gray-600">Cảm ơn bạn đã sử dụng dịch vụ.</p>
-        </>
-      )}
-      {status === "failed" && (
-        <>
-          <h2 className="text-3xl font-bold text-red-600 mb-2">Thanh toán thất bại!</h2>
-          <p className="text-gray-600">Vui lòng thử lại hoặc liên hệ hỗ trợ.</p>
-        </>
-      )}
-    </section>
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="text-center">
+        <h2 className="text-2xl font-semibold text-gray-800">Đang xử lý quét QR...</h2>
+        <div className="w-16 h-16 border-8 border-gray-200 border-t-green-500 rounded-full animate-spin mx-auto mt-4"></div>
+      </div>
+    </div>
   );
 };
 
