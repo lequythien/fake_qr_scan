@@ -34,9 +34,9 @@ app.use("/api/clients", clientRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/qrcode", qrcodeRoute);
 
-// Uncomment if serving static files (e.g., for a frontend build)
-// const staticPath = path.join(__dirname);
-// app.use(express.static(staticPath));
+
+const staticPath = path.join(__dirname);
+app.use(express.static(staticPath));
 
 // Start server
 const PORT = process.env.PORT || 8001;

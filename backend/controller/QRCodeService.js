@@ -44,43 +44,42 @@ const QRCode = require("qrcode");
 
 const generateQRCode = (req, res) => {
     const { amount } = req.body;
-    const {clientKeyId} = req.params;
+    const { clientKeyId } = req.params;
 
     if (typeof amount !== "number" || amount < 0) {
-        return res.status(400).json({ message: "Số tiền không hợp lệ" })
+        return res.status(400).json({ message: "Số tiền không hợp lệ" });
     }
 
     Client.findById(clientKeyId)
         .then(client => {
             if (!client) {
-                return res.status(404).json({ message: "Client ID không tồn tại" })
+                return res.status(404).json({ message: "Client ID không tồn tại" });
             }
+
             return Payment.create({
                 clientKeyId,
                 amount,
                 status: "pending",
-            })
-                .then(payment => {
-                    const qrData = JSON.stringify({
+            }).then(payment => {
+                const serverURL = "http://192.168.1.17:8001"; 
+                const qrURL = `${serverURL}/scan.html?paymentId=${payment._id}`;
+                console.log(qrURL);
+
+                return QRCode.toDataURL(qrURL).then(qrCodeImage => {
+                    res.json({
                         paymentId: payment._id,
-                        amount,
-                        client: client.name,
+                        qrCode: qrCodeImage,
+                        status: payment.status,
+                        url: qrURL
                     });
-                    return QRCode.toDataURL(qrData)
-                        .then(qrCodeImage => {
-                            res.json({
-                                paymentId: payment._id,
-                                qrCode: qrCodeImage,
-                                status: payment.status,
-                            })
-                        })
-                })
+                });
+            });
         })
         .catch(error => {
             console.error("QR code error:", error);
             res.status(500).json({ message: "Lỗi tạo QR code." });
         });
-}
+};
 
 const scanQRCode = (req, res) => {
     const { paymentId } = req.params;
