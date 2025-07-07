@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiArrowLeft } from "react-icons/fi";
 
 const Register = () => {
   const [callbackUrl, setCallbackUrl] = useState("");
@@ -39,8 +39,8 @@ const Register = () => {
       // Store client ID in localStorage
       localStorage.setItem("clientId", data.client.id);
 
-      // Redirect to the intended page or default to /create-qr
-      const redirectTo = location.state?.from?.pathname || "/create-qr";
+      // Redirect to the intended page or default to /home/create-qr
+      const redirectTo = location.state?.from?.pathname || "/home/create-qr";
       navigate(redirectTo, { replace: true });
     } catch (err) {
       setError(err.message);
@@ -56,7 +56,10 @@ const Register = () => {
       </h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="callbackUrl" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="callbackUrl"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Callback URL
           </label>
           <input
@@ -65,12 +68,14 @@ const Register = () => {
             required
             value={callbackUrl}
             onChange={(e) => setCallbackUrl(e.target.value)}
-            placeholder="http://localhost:5173/create-qr"
+            placeholder="http://localhost:5173/home/create-qr"
             className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
           />
         </div>
         {error && (
-          <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</p>
+          <p className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+            {error}
+          </p>
         )}
         <button
           type="submit"
