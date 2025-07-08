@@ -1,52 +1,50 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Added import for navigation
-import QrDisplay from "../components/QrDisplay";
-import { GrLinkPrevious } from "react-icons/gr";
+import { useNavigate } from "react-router-dom";
+import io from "socket.io-client";
+import axios from "axios";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { GrLinkPrevious } from "react-icons/gr";
 
 const CreateQr = () => {
   const [qrUrl, setQrUrl] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [paymentInfo, setPaymentInfo] = useState(null);
-  const navigate = useNavigate(); // Initialize navigate hook
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const SERVER_BASE = "http://192.168.1.17:8001";
 
   const validationSchema = Yup.object({
     amount: Yup.string()
       .required("Vui lòng nhập số tiền")
       .test("min-amount", "Số tiền tối thiểu là 1.000", (value) => {
-        const raw = value?.replaceAll(".", "") || "0";
+        const raw = value?.replace(/\D/g, "") || "0";
         return parseInt(raw, 10) >= 1000;
       }),
   });
 
-  const handleCreate = async (values) => {
+  const handleCreate = async (values, { setErrors }) => {
+    const numericAmount = parseInt(values.amount.replace(/\D/g, ""), 10);
+    const clientId = localStorage.getItem("clientId");
+
+    if (!clientId) {
+      setErrors({ amount: "Thiếu clientId! Vui lòng đăng ký trước." });
+      return;
+    }
+
+    if (isNaN(numericAmount) || numericAmount <= 0) {
+      setErrors({ amount: "Vui lòng nhập số tiền hợp lệ." });
+      return;
+    }
+
     setLoading(true);
-    setError(null);
-
     try {
-      const clientId = localStorage.getItem("clientId");
-      if (!clientId) {
-        throw new Error("Bạn chưa đăng ký clientId");
-      }
-
-      const numericAmount = parseInt(values.amount.replaceAll(".", ""), 10);
-
-      const res = await fetch(
-        `http://localhost:8001/api/qrcode/generate/${clientId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: numericAmount }),
-        }
+      const response = await axios.post(
+        `${SERVER_BASE}/api/qrcode/generate/${clientId}`,
+        { amount: numericAmount }
       );
 
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Tạo QR thất bại");
-      }
-
+      const data = response.data;
       setQrUrl(data.qrCode);
       setPaymentInfo({
         id: data.paymentId,
@@ -54,8 +52,21 @@ const CreateQr = () => {
         clientId,
         status: data.status,
       });
+
+      // Kết nối socket để theo dõi trạng thái thanh toán
+      const socket = io(SERVER_BASE);
+      socket.emit("join-payment-room", data.paymentId);
+
+      socket.on("payment-status-updated", ({ status }) => {
+        console.log("💡 Status from server (CreateQr):", status);
+        localStorage.setItem("finalStatus", status);
+        localStorage.setItem("clientId", clientId);
+        navigate("/home/complete");
+        socket.disconnect();
+      });
     } catch (err) {
-      setError(err.message);
+      console.error("❌ Lỗi tạo mã QR:", err);
+      setErrors({ amount: err.response?.data?.message || "Đã xảy ra lỗi khi tạo mã QR." });
     } finally {
       setLoading(false);
     }
@@ -66,100 +77,70 @@ const CreateQr = () => {
     return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
-  // Handler for back button
   const handleBack = () => {
-    navigate(-1); // Navigate to the previous page
+    navigate("/home/register");
   };
-
+  
   return (
-    <section className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8 mt-8 animate-fade-in">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       <div
-        className="flex items-center gap-2 mb-6 text-blue-600 cursor-pointer hover:underline text-lg font-medium"
+        className="flex items-center gap-2 mb-4 text-blue-600 cursor-pointer hover:underline text-lg font-medium"
         onClick={handleBack}
       >
         <GrLinkPrevious />
         Quay lại
       </div>
-
-      <header className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl md:text-2xl font-bold text-blue-700">
-          Tạo mã QR thanh toán
-        </h1>
-      </header>
-
+      <h2 className="text-2xl font-bold mb-4 text-center">Tạo mã QR</h2>
       <Formik
         initialValues={{ amount: "" }}
         validationSchema={validationSchema}
         onSubmit={handleCreate}
       >
         {({ values, setFieldValue }) => (
-          <Form className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Số tiền (VND)
-              </label>
-              <Field name="amount">
-                {({ field }) => (
-                  <input
-                    {...field}
-                    type="text"
-                    inputMode="numeric"
-                    value={values.amount}
-                    onChange={(e) =>
-                      setFieldValue("amount", formatNumber(e.target.value))
-                    }
-                    placeholder="100.000"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                )}
-              </Field>
-              <ErrorMessage
-                name="amount"
-                component="div"
-                className="text-red-600 text-sm mt-1"
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-600 text-sm font-medium">{error}</p>
-            )}
-
+          <Form className="mb-4">
+            <label className="block text-gray-700 mb-2">Số tiền:</label>
+            <Field name="amount">
+              {({ field }) => (
+                <input
+                  {...field}
+                  type="text"
+                  inputMode="numeric"
+                  value={values.amount}
+                  onChange={(e) =>
+                    setFieldValue("amount", formatNumber(e.target.value))
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2"
+                  placeholder="100.000"
+                  aria-label="Số tiền (VND)"
+                />
+              )}
+            </Field>
+            <ErrorMessage
+              name="amount"
+              component="div"
+              className="text-red-600 text-sm mt-1"
+            />
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+              className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+              aria-label={loading ? "Đang tạo mã QR" : "Tạo mã QR"}
             >
-              {loading ? "Đang tạo..." : "Tạo QR Code"}
+              {loading ? "Đang tạo..." : "Tạo mã QR"}
             </button>
           </Form>
         )}
       </Formik>
 
-      {qrUrl && paymentInfo && (
-        <div className="mt-10 border-t pt-6 space-y-6">
-          <QrDisplay qrUrl={qrUrl} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm bg-gray-50 p-4 rounded-xl shadow-inner">
-            <InfoItem label="Mã đơn hàng" value={paymentInfo.id} />
-            <InfoItem
-              label="Số tiền"
-              value={`${parseInt(paymentInfo.amount).toLocaleString(
-                "vi-VN"
-              )} VNĐ`}
-            />
-            <InfoItem label="Client ID" value={paymentInfo.clientId} />
-            <InfoItem label="Trạng thái" value={paymentInfo.status} />
-          </div>
+      {qrUrl && (
+        <div className="mt-6 text-center">
+          <h3 className="text-lg font-semibold mb-2">Quét mã QR để thanh toán:</h3>
+          <img src={qrUrl} alt="QR Code" className="mx-auto w-56 h-56" />
+          <p className="text-sm text-gray-500 mt-2">ID giao dịch: {paymentInfo?.id}</p>
         </div>
       )}
-    </section>
+    </div>
   );
 };
-
-const InfoItem = ({ label, value, full }) => (
-  <div className={full ? "col-span-full" : ""}>
-    <span className="font-medium text-gray-600 mr-1">{label}:</span>
-    <span className="text-gray-800 break-all">{value}</span>
-  </div>
-);
 
 export default CreateQr;

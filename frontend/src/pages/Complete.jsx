@@ -1,13 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FiCheckCircle } from "react-icons/fi";
+import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 const Complete = () => {
   const navigate = useNavigate();
-  const clientId = localStorage.getItem("clientId");
+  const status = localStorage.getItem("finalStatus"); // ✅ lấy từ localStorage
+  const isSuccess = status === "success";
 
   const handleStartOver = () => {
     localStorage.removeItem("clientId");
+    localStorage.removeItem("finalStatus");
     navigate("/home/register");
   };
 
@@ -15,12 +17,23 @@ const Complete = () => {
     <div className="max-w-2xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-md p-6 text-center">
         <div className="flex justify-center mb-4">
-          <FiCheckCircle className="text-5xl text-blue-600" />
+          {isSuccess ? (
+            <FiCheckCircle className="text-5xl text-green-600" />
+          ) : (
+            <FiXCircle className="text-5xl text-red-600" />
+          )}
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Hoàn tất!</h2>
+
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">
+          {isSuccess ? "Hoàn tất!" : "Thất bại"}
+        </h2>
+
         <p className="text-gray-600 mb-6">
-          Quy trình thanh toán của bạn đã hoàn tất.
+          {isSuccess
+            ? "Quy trình thanh toán của bạn đã hoàn tất."
+            : "Rất tiếc, giao dịch của bạn không thành công."}
         </p>
+
         <div className="flex justify-center gap-4">
           <button
             onClick={handleStartOver}
