@@ -85,7 +85,9 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProgressBar currentStep={currentStep} />
+      {!pathname.startsWith("/home/pending-approval") && (
+        <ProgressBar currentStep={currentStep} />
+      )}
       <div className="p-4">
         <Routes>
           <Route path="/register" element={<Register />} />
@@ -113,7 +115,10 @@ const Home = () => {
               </RequireClientId>
             }
           />
-          <Route path="/pending-approval/:paymentId" element={<PendingApproval />} />
+          <Route
+            path="/pending-approval/:paymentId"
+            element={<PendingApproval />}
+          />
           <Route path="*" element={<Navigate to="/home/register" replace />} />
         </Routes>
       </div>
