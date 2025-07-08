@@ -9,7 +9,7 @@ const PendingApproval = () => {
   const [status, setStatus] = useState("loading");
 
   useEffect(() => {
-    const socket = io("http://192.168.1.24:8001");
+    const socket = io("http://192.168.1.17:8001");
 
     console.log("📦 Tracking paymentId:", paymentId);
     socket.emit("join-payment-room", paymentId);
