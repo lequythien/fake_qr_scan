@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FiPieChart, FiList, FiLogOut, FiMenu, FiX } from "react-icons/fi";
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const navigate = useNavigate();
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
@@ -14,9 +15,10 @@ const Sidebar = () => {
       : "flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition";
 
   const handleLogout = () => {
-    // Implement actual logout logic here
+    onLogout(); // Call the onLogout prop from App.jsx to clear localStorage and update isLoggedIn
     setShowLogoutModal(false);
     setIsOpen(false);
+    navigate("/login"); // Redirect to login page
   };
 
   return (

@@ -62,8 +62,8 @@ const generateQRCode = (req, res) => {
                 amount,
                 status: "pending",
             }).then(payment => {
-                const serverURL = "http://192.168.1.17:8001"; 
-                const qrURL = `${serverURL}/pending-approval?paymentId=${payment._id}`;
+                const serverURL = "http://192.168.1.24:8001"; 
+                const qrURL = `${serverURL}/qr-scan?paymentId=${payment._id}`;
                 console.log(qrURL);
 
                 return QRCode.toDataURL(qrURL).then(qrCodeImage => {
