@@ -85,7 +85,9 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <ProgressBar currentStep={currentStep} />
+      {!pathname.startsWith("/home/pending-approval") && (
+        <ProgressBar currentStep={currentStep} />
+      )}
       <div className="p-4">
         <Routes>
           <Route path="/register" element={<Register />} />
