@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Search,
-  Filter,
-  Download,
   Edit,
   Trash2,
   AlertCircle,
@@ -112,8 +110,6 @@ const TransactionRow = ({ tx, onEdit }) => {
 // Transactions Component
 const Transactions = () => {
   const [list, setList] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTx, setEditingTx] = useState(null);
   const [formData, setFormData] = useState({
@@ -122,20 +118,42 @@ const Transactions = () => {
     status: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
-  // Fetch mock data
+  // Fetch data from API
   useEffect(() => {
-    setTimeout(() => {
-      setList(
-        Array.from({ length: 15 }).map((_, i) => ({
-          id: 1000 + i,
-          clientId: `client-${i % 3}`,
-          amount: (Math.random() * 200000).toFixed(0),
-          status: ["pending", "success", "failed"][i % 3],
-        }))
-      );
-    }, 400);
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch("http://localhost:8001/api/auth", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Map API response to frontend format
+        const mappedData = data.payments.map((payment) => ({
+          id: payment._id,
+          clientId: `client-${payment.clientKeyId._id}`,
+          amount: payment.amount,
+          status: payment.status,
+        }));
+        setList(mappedData);
+        setError(null);
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách giao dịch:", err);
+        setError("Không thể tải dữ liệu giao dịch. Vui lòng thử lại sau.");
+      }
+    };
+
+    fetchTransactions();
   }, []);
 
   // Handlers
@@ -220,102 +238,38 @@ const Transactions = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 sm:mb-8">
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">
-                  Tổng cộng
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
-                  {statusCounts.all}
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <div className="w-5 h-5 sm:w-6 sm:h-6 bg-blue-600 rounded" />
-              </div>
-            </div>
+        {/* Filter and Search */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="Tìm kiếm theo Mã GD hoặc Client ID..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base"
+            />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           </div>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">
-                  Đang xử lý
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-yellow-600">
-                  {statusCounts.pending}
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">
-                  Thành công
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-green-600">
-                  {statusCounts.success}
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs sm:text-sm font-medium text-gray-600">
-                  Thất bại
-                </p>
-                <p className="text-xl sm:text-2xl font-bold text-red-600">
-                  {statusCounts.failed}
-                </p>
-              </div>
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters and Search */}
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder="Tìm kiếm theo mã GD hoặc client..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-80"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <div className="relative">
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <select
-                  className="pl-10 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white w-full sm:w-auto"
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                >
-                  <option value="all">Tất cả trạng thái</option>
-                  <option value="pending">Đang xử lý</option>
-                  <option value="success">Thành công</option>
-                  <option value="failed">Thất bại</option>
-                </select>
-              </div>
-            </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto justify-center">
-              <Download className="w-4 h-4" />
-              Xuất Excel
-            </button>
+          <div className="flex space-x-2">
+            {["all", "pending", "success", "failed"].map((status) => (
+              <button
+                key={status}
+                onClick={() => setFilterStatus(status)}
+                className={`px-4 py-2 text-xs sm:text-sm font-medium rounded-lg border transition-colors ${
+                  filterStatus === status
+                    ? "bg-blue-600 text-white border-blue-600"
+                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                }`}
+              >
+                {status === "all"
+                  ? `Tất cả (${statusCounts.all})`
+                  : status === "pending"
+                  ? `Đang xử lý (${statusCounts.pending})`
+                  : status === "success"
+                  ? `Thành công (${statusCounts.success})`
+                  : `Thất bại (${statusCounts.failed})`}
+              </button>
+            ))}
           </div>
         </div>
 
@@ -409,14 +363,24 @@ const Transactions = () => {
         )}
 
         {/* Table */}
-        {!list ? (
+        {!list && !error ? (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12">
             <div className="flex flex-col items-center justify-center">
-              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mb-4" />
+              <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-b-2 border-blue-600 mb-3" />
               <p className="text-gray-600 text-base sm:text-lg">
                 Đang tải dữ liệu...
               </p>
             </div>
+          </div>
+        ) : error ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 text-red-500" />
+            </div>
+            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+              Lỗi tải dữ liệu
+            </h3>
+            <p className="text-gray-500 text-sm sm:text-base">{error}</p>
           </div>
         ) : (
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -512,15 +476,15 @@ const Transactions = () => {
 
             {/* Empty State */}
             {paginatedList?.length === 0 && (
-              <div className="p-8 sm:p-12 text-center">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="p-10 sm:p-16 text-center">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-6">
                   <Search className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" />
                 </div>
                 <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
                   Không tìm thấy giao dịch
                 </h3>
                 <p className="text-gray-500 text-sm sm:text-base">
-                  Thử thay đổi tiêu chí tìm kiếm hoặc bộ lọc
+                  Thử điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc
                 </p>
               </div>
             )}
