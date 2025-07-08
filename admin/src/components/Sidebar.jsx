@@ -15,10 +15,10 @@ const Sidebar = ({ onLogout }) => {
       : "flex items-center gap-3 px-4 py-3 text-gray-600 hover:text-blue-700 hover:bg-blue-100 rounded-lg transition";
 
   const handleLogout = () => {
-    onLogout(); // Call the onLogout prop from App.jsx to clear localStorage and update isLoggedIn
+    onLogout();
     setShowLogoutModal(false);
     setIsOpen(false);
-    navigate("/login"); // Redirect to login page
+    navigate("/login");
   };
 
   return (
@@ -36,7 +36,7 @@ const Sidebar = ({ onLogout }) => {
       <aside
         className={`fixed top-0 left-0 w-64 bg-white shadow-lg z-40 transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"} 
-          md:translate-x-0 md:static md:block overflow-y-auto flex flex-col`}
+          md:translate-x-0 md:static overflow-y-auto flex flex-col h-full md:h-auto`}
       >
         {/* Logo */}
         <div className="px-6 py-5 border-b border-gray-200">

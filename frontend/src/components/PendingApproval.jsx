@@ -5,10 +5,10 @@ import { FiClock, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 
 const PendingApproval = () => {
   const navigate = useNavigate();
-  const { paymentId } = useParams(); 
+  const { paymentId } = useParams();
   const [status, setStatus] = useState("loading");
 
-  const SERVER_BASE = "http://192.168.1.17:8001"; 
+  const SERVER_BASE = "http://192.168.1.24:8001";
 
   useEffect(() => {
     if (!paymentId) {
@@ -108,9 +108,6 @@ const PendingApproval = () => {
               <h2 className="text-2xl md:text-3xl font-bold text-green-600">
                 Giao dịch thành công!
               </h2>
-              <p className="text-gray-600 text-sm md:text-base">
-                Đang chuyển hướng đến trang hoàn tất...
-              </p>
             </div>
             <div className="bg-green-50 border border-green-200 rounded-lg p-4 mx-4">
               <p className="text-sm text-green-800">
