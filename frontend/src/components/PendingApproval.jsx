@@ -5,10 +5,10 @@ import { FiClock, FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 
 const PendingApproval = () => {
   const navigate = useNavigate();
-  const { paymentId } = useParams(); // <-- nếu bạn dùng /qr-scan/:paymentId thì giữ
+  const { paymentId } = useParams(); 
   const [status, setStatus] = useState("loading");
 
-  const SERVER_BASE = "http://192.168.1.24:8001"; // 👈 IP LAN của backend
+  const SERVER_BASE = "http://192.168.1.17:8001"; 
 
   useEffect(() => {
     if (!paymentId) {
