@@ -15,7 +15,7 @@ const Scan = () => {
     console.log('📦 Tracking paymentId:', paymentId);
 
     // Initialize Socket.IO connection
-    const socket = io('http://192.168.1.24:8001');
+    const socket = io('http://192.168.1.17:8001');
     socket.emit('join-payment-room', paymentId);
 
     // Listen for payment status updates
