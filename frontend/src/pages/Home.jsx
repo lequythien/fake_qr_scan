@@ -6,7 +6,6 @@ import QrDisplay from "../components/QrDisplay";
 import Register from "./Register";
 import { FiCheckCircle } from "react-icons/fi";
 import Complete from "./Complete";
-import PendingApproval from "../components/PendingApproval";
 
 // Component to check if clientId exists
 const RequireClientId = ({ children }) => {
@@ -25,7 +24,6 @@ const ProgressBar = ({ currentStep }) => {
   const steps = [
     { label: "Đăng ký", path: "/home/register" },
     { label: "Tạo QR", path: "/home/create-qr" },
-    { label: "Chờ xác nhận", path: "/home/pending-approval" },
     { label: "Hoàn tất", path: "/home/complete" },
   ];
 
@@ -36,20 +34,20 @@ const ProgressBar = ({ currentStep }) => {
           <React.Fragment key={index}>
             <div className="flex flex-col items-center min-w-[90px]">
               <div
-                className={`w-10 h-10 flex items-center justify-center rounded-full ${
+                className={`w-7 h-7 md:w-10 md:h-10 flex items-center justify-center rounded-full ${
                   currentStep >= index
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 text-gray-600"
                 } transition-colors duration-300`}
               >
                 {currentStep > index ? (
-                  <FiCheckCircle className="text-xl" />
+                  <FiCheckCircle className="text-sm" />
                 ) : (
                   index + 1
                 )}
               </div>
               <span
-                className={`mt-2 text-sm font-medium text-center ${
+                className={`mt-2 text-xs md:text-sm font-medium text-center ${
                   currentStep >= index ? "text-green-600" : "text-gray-600"
                 }`}
               >
@@ -80,10 +78,8 @@ const Home = () => {
       setCurrentStep(0);
     } else if (pathname === "/home/create-qr") {
       setCurrentStep(1);
-    } else if (pathname.startsWith("/home/pending-approval")) {
-      setCurrentStep(2);
     } else if (pathname === "/home/complete") {
-      setCurrentStep(3);
+      setCurrentStep(2);
     }
   }, [pathname]);
 
@@ -98,14 +94,6 @@ const Home = () => {
             element={
               <RequireClientId>
                 <CreateQr />
-              </RequireClientId>
-            }
-          />
-          <Route
-            path="/pending-approval/:paymentId"
-            element={
-              <RequireClientId>
-                <PendingApproval />
               </RequireClientId>
             }
           />
@@ -125,10 +113,7 @@ const Home = () => {
               </RequireClientId>
             }
           />
-          <Route
-            path="/qr-scan/:paymentId"
-            element={<QrScan />}
-          />
+          <Route path="/qr-scan/:paymentId" element={<QrScan />} />
           <Route path="*" element={<Navigate to="/home/register" replace />} />
         </Routes>
       </div>
