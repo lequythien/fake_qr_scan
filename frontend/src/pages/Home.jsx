@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import CreateQr from "./CreateQr";
-import QrScan from "./QrScan";
 import QrDisplay from "../components/QrDisplay";
 import Register from "./Register";
 import { FiCheckCircle } from "react-icons/fi";
 import Complete from "./Complete";
+import PendingApproval from "../components/PendingApproval";
 
 // Component to check if clientId exists
 const RequireClientId = ({ children }) => {
@@ -113,7 +113,10 @@ const Home = () => {
               </RequireClientId>
             }
           />
-          <Route path="/qr-scan/:paymentId" element={<QrScan />} />
+          <Route
+            path="/pending-approval/:paymentId"
+            element={<PendingApproval />}
+          />
           <Route path="*" element={<Navigate to="/home/register" replace />} />
         </Routes>
       </div>
