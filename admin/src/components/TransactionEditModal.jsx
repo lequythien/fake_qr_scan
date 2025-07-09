@@ -11,19 +11,26 @@ const TransactionEditModal = ({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
+    // Validate that a valid status is selected
+    if (!["success", "failed"].includes(formData.status)) {
+      alert("Vui lòng chọn trạng thái hợp lệ (Thành công hoặc Thất bại).");
+      return;
+    }
+
     setIsLoading(true);
     try {
       await onSave();
+    } catch (error) {
+      console.error("Lỗi khi lưu trạng thái:", error);
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300 px-4"
-    >
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity duration-300 px-4">
       <div className="bg-white rounded-2xl p-6 sm:p-8 w-full max-w-md shadow-2xl transform transition-all duration-300 scale-100">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
@@ -91,6 +98,9 @@ const TransactionEditModal = ({
                   : ""
               }`}
             >
+              <option value="" disabled>
+                Chọn trạng thái
+              </option>
               <option value="success">Thành công</option>
               <option value="failed">Thất bại</option>
             </select>
@@ -105,9 +115,9 @@ const TransactionEditModal = ({
           </button>
           <button
             onClick={handleSave}
-            disabled={editingTx?.isUpdated || isLoading}
+            disabled={editingTx?.isUpdated || isLoading || !formData.status}
             className={`px-4 sm:px-6 py-2 rounded-lg font-medium text-sm sm:text-base transition-colors relative ${
-              editingTx?.isUpdated || isLoading
+              editingTx?.isUpdated || isLoading || !formData.status
                 ? "bg-gray-400 text-gray-600 cursor-not-allowed"
                 : "bg-blue-600 text-white hover:bg-blue-700"
             }`}

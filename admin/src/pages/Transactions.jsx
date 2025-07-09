@@ -129,7 +129,7 @@ const Transactions = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch("http://localhost:8001/api/auth", {
+        const response = await fetch("http://localhost:8001/api/admin", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -172,7 +172,7 @@ const Transactions = () => {
   const handleSave = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8001/api/auth/payment/${editingTx.id}`,
+        `http://localhost:8001/api/admin/payment/${editingTx.id}`,
         {
           method: "PUT",
           headers: {
