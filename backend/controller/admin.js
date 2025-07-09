@@ -107,7 +107,7 @@ const findById = (req, res) => {
       }
       res.json({ payment });
     })
-    .cacth((err) => {
+    .catch((err) => {
       console.error("Lỗi khi tìm giao dịch:", err);
       res.status(500).json({ message: "Lỗi máy chủ khi tìm giao dịch." });
     });
