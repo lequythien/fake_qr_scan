@@ -8,7 +8,6 @@ const Complete = () => {
   const isSuccess = status === "success";
 
   const handleStartOver = () => {
-    localStorage.removeItem("clientId");
     localStorage.removeItem("finalStatus");
     navigate("/home/create-qr");
   };
