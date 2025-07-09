@@ -4,7 +4,7 @@ import { FiCheckCircle, FiXCircle } from "react-icons/fi";
 
 const Complete = () => {
   const navigate = useNavigate();
-  const status = localStorage.getItem("finalStatus"); // ✅ lấy từ localStorage
+  const status = localStorage.getItem("finalStatus");
   const isSuccess = status === "success";
 
   const handleStartOver = () => {
