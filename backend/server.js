@@ -6,8 +6,8 @@ require("dotenv").config();
 const cors = require("cors");
 
 const clientRoute = require("./route/clientRoute");
-const authRoute = require("./route/authRoute");
 const qrcodeRoute = require("./route/qrcodeRoute");
+const adminRoute = require("./route/adminRoute")
 
 const { init } = require("./socket/socketInstance");
 
@@ -36,7 +36,7 @@ app.use(
 
 // Routes
 app.use("/api/clients", clientRoute);
-app.use("/api/auth", authRoute);
+app.use("/api/admin", adminRoute);
 app.use("/api/qrcode", qrcodeRoute);
 
 const staticPath = path.join(__dirname);

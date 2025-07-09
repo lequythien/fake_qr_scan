@@ -10,7 +10,7 @@ const Complete = () => {
   const handleStartOver = () => {
     localStorage.removeItem("clientId");
     localStorage.removeItem("finalStatus");
-    navigate("/home/register");
+    navigate("/home/create-qr");
   };
 
   return (
