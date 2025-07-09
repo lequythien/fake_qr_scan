@@ -189,7 +189,6 @@ const Transactions = () => {
   const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
-  // Fetch data from API
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -206,7 +205,7 @@ const Transactions = () => {
         const data = await response.json();
         const mappedData = data.payments.map((payment) => ({
           id: payment._id,
-          clientId: `client-${payment.clientKeyId._id}`,
+          clientId: payment.clientKeyId?._id ? `client-${payment.clientKeyId._id}` : "N/A",
           amount: payment.amount,
           status: payment.status,
           isUpdated: ["success", "failed"].includes(payment.status),
