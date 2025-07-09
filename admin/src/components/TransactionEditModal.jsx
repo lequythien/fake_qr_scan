@@ -17,7 +17,7 @@ const TransactionEditModal = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   if (!isOpen) return null;
 
