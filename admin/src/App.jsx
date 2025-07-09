@@ -23,7 +23,7 @@ const App = () => {
 
   // AuthRoute to prevent logged-in users from accessing login page
   const AuthRoute = ({ children }) => {
-    return !isLoggedIn ? children : <Navigate to="/dashboard" replace />;
+    return !isLoggedIn ? children : <Navigate to="/transactions" replace />;
   };
 
   return (
